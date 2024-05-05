@@ -7,6 +7,7 @@ Action: TypeAlias = Literal[
     "store_true", "store_false", "store", "store_const", "help", "version"
 ]
 Nargs: TypeAlias = Literal["?", "*", "+"] | int
+LogLevel: TypeAlias = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 
 @dataclasses.dataclass

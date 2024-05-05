@@ -1,7 +1,8 @@
 import argparse
+import logging
 from typing import Any, Self, get_origin
 
-from pydantic import BaseModel, SecretStr
+from pydantic import BaseModel, SecretStr, ValidationError
 
 from argmodel.field import get_arg_meta
 from argmodel.typing_utils import (
@@ -13,6 +14,7 @@ from argmodel.typing_utils import (
     literal_to_union,
 )
 
+logger = logging.getLogger(__name__)
 
 class ArgModel(BaseModel):
     @classmethod
@@ -88,13 +90,22 @@ class ArgModel(BaseModel):
         cls.__build_parser(parser)
 
         return parser
+    
+    @classmethod
+    def print_help(cls) -> None:
+        cls.build_parser().print_help()
 
     @classmethod
-    def parse_args(cls, args: list[str] | None) -> Self:
+    def parse_args(cls, args: list[str] | None = None) -> Self:
         parser = cls.build_parser()
         parsed_args = parser.parse_args(args)
 
-        return cls(**parsed_args.__dict__)
+        try:
+            return cls(**parsed_args.__dict__)
+        except ValidationError as e:
+            logger.error(e)
+            parser.print_help()
+            exit(1)
 
     def repr_args(self) -> list[str]:
         args = []
