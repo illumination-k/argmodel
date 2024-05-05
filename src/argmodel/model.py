@@ -1,13 +1,17 @@
 import argparse
-from pydantic import BaseModel
-
 from typing import Any, Self, get_origin
-from argmodel.typing_utils import (
-    is_optional_type,
-    get_optional_inner_type,
-    get_list_inner_type,
-)
+
+from pydantic import BaseModel, SecretStr
+
 from argmodel.field import get_arg_meta
+from argmodel.typing_utils import (
+    get_list_inner_type,
+    get_literal_values,
+    get_optional_inner_type,
+    is_literal_type,
+    is_optional_type,
+    literal_to_union,
+)
 
 
 class ArgModel(BaseModel):
@@ -20,6 +24,7 @@ class ArgModel(BaseModel):
         for name, field in cls.model_fields.items():
             type_hint = field.annotation
             argmeta = get_arg_meta(field.metadata)
+            is_literal = False
 
             if is_optional_type(type_hint):
                 type_hint = get_optional_inner_type(type_hint)
@@ -29,6 +34,14 @@ class ArgModel(BaseModel):
             ):
                 type_hint = get_list_inner_type(type_hint)
 
+            if type_hint is SecretStr:
+                type_hint = str
+
+            if is_literal_type(type_hint):
+                is_literal = True
+                literal_values = get_literal_values(type_hint)
+                type_hint = literal_to_union(type_hint)
+
             argument_args = []
             argument_kwargs: dict[str, Any] = {}
 
@@ -36,11 +49,14 @@ class ArgModel(BaseModel):
                 argument_kwargs["action"] = "store_true"
             else:
                 argument_kwargs["type"] = type_hint
+                if is_literal:
+                    argument_kwargs["choices"] = literal_values
 
                 default = field.default
                 if default is not None and field.default_factory is not None:
                     default = field.default_factory()
                 argument_kwargs["default"] = default
+
             if argmeta is not None:
                 if argmeta.short is not None:
                     argument_args.append(f"-{argmeta.short}")

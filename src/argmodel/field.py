@@ -1,7 +1,7 @@
 import dataclasses
+from typing import Any, Iterable, Literal, TypeAlias, Unpack
 
 from pydantic.fields import FieldInfo, _FieldInfoInputs
-from typing import Any, Iterable, Unpack, Literal, TypeAlias
 
 Action: TypeAlias = Literal[
     "store_true", "store_false", "store", "store_const", "help", "version"

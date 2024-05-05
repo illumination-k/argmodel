@@ -1,5 +1,7 @@
+from typing import Literal, Optional
+
+from .field import ArgField
 from .model import ArgModel
-from .field import ArgField, ArgMeta
 
 
 class SimpleArgs(ArgModel):
@@ -45,4 +47,42 @@ def test_list_args() -> None:
 
     assert parsed.strings == ["hello", "world"]
 
-    print(parsed.repr_args())
+
+class OptionalArgs(ArgModel):
+    string: str | None = ArgField(default=None, group="group1")
+    integer: Optional[int] = ArgField(default=None, group="group1")
+
+
+def test_optional_args() -> None:
+    args = [
+        "--string",
+        "hello",
+        "--integer",
+        "42",
+    ]
+
+    parsed = OptionalArgs.parse_args(args)
+
+    assert parsed.string == "hello"
+    assert parsed.integer == 42
+
+    args = []
+
+    parsed = OptionalArgs.parse_args(args)
+    assert parsed.string is None
+    assert parsed.integer is None
+
+
+class LiteralArgs(ArgModel):
+    literal: Literal["a", "b", "c"] = ArgField(group="group1")
+
+
+def test_literal_args() -> None:
+    args = [
+        "--literal",
+        "a",
+    ]
+
+    parsed = LiteralArgs.parse_args(args)
+
+    assert parsed.literal == "a"

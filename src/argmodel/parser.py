@@ -1,7 +1,8 @@
-from typing import Callable, TypeVar, Generic
-from argmodel.model import ArgModel
-import dataclasses
 import argparse
+import dataclasses
+from typing import Callable, Generic, TypeVar
+
+from argmodel.model import ArgModel
 
 BaseArgModel = TypeVar("BaseArgModel", bound=ArgModel)
 SubArgModel = TypeVar("SubArgModel", bound=ArgModel)
