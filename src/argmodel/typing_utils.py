@@ -1,5 +1,8 @@
+import dataclasses
 from types import UnionType
 from typing import Any, Literal, Union, get_args, get_origin
+
+from pydantic.types import SecretStr
 
 
 def is_optional_type(t: Any) -> bool:
@@ -51,3 +54,36 @@ def literal_to_union(t: Any) -> Any:
 def get_literal_values(t: Any) -> tuple[Any]:
     assert is_literal_type(t), f"{t} is not a Literal type"
     return get_args(t)
+
+
+@dataclasses.dataclass
+class TypeHintManager:
+    type_hint: Any
+    is_literal: bool = False
+    literal_values: tuple[Any] | None = None
+
+    def _unwrap_optional(self) -> None:
+        if is_optional_type(self.type_hint):
+            self.type_hint = get_optional_inner_type(self.type_hint)
+
+    def _unwrap_literal(self) -> None:
+        if is_literal_type(self.type_hint):
+            self.is_literal = True
+            self.literal_values = get_literal_values(self.type_hint)
+            self.type_hint = literal_to_union(self.type_hint)
+
+    def _unwrap_list(self) -> None:
+        if get_origin(self.type_hint) is list:
+            self.type_hint = get_list_inner_type(self.type_hint)
+
+    def _unwrap_secret(self) -> None:
+        if self.type_hint is SecretStr:
+            self.type_hint = str
+
+    def unwrap(self) -> Any:
+        self._unwrap_optional()
+        self._unwrap_list()
+        self._unwrap_literal()
+        self._unwrap_secret()
+
+        return self.type_hint

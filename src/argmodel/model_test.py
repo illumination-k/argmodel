@@ -22,7 +22,7 @@ def test_simple_args() -> None:
         "3.14",
     ]
 
-    parsed = SimpleArgs.parse_args(args)
+    parsed = SimpleArgs.parse_typed_args(args)
 
     assert parsed.string == "hello"
     assert parsed.integer == 42
@@ -43,7 +43,7 @@ def test_list_args() -> None:
         "world",
     ]
 
-    parsed = ListArgs.parse_args(args)
+    parsed = ListArgs.parse_typed_args(args)
 
     assert parsed.strings == ["hello", "world"]
 
@@ -61,14 +61,14 @@ def test_optional_args() -> None:
         "42",
     ]
 
-    parsed = OptionalArgs.parse_args(args)
+    parsed = OptionalArgs.parse_typed_args(args)
 
     assert parsed.string == "hello"
     assert parsed.integer == 42
 
     args = []
 
-    parsed = OptionalArgs.parse_args(args)
+    parsed = OptionalArgs.parse_typed_args(args)
     assert parsed.string is None
     assert parsed.integer is None
 
@@ -83,6 +83,6 @@ def test_literal_args() -> None:
         "a",
     ]
 
-    parsed = LiteralArgs.parse_args(args)
+    parsed = LiteralArgs.parse_typed_args(args)
 
     assert parsed.literal == "a"

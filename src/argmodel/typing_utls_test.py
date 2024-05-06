@@ -1,6 +1,7 @@
 from typing import Literal, Optional, Union
 
 from .typing_utils import (
+    TypeHintManager,
     get_list_inner_type,
     get_literal_values,
     get_optional_inner_type,
@@ -70,3 +71,42 @@ def test_get_literal_values() -> None:
         "c",
         "d",
     )
+
+
+def test_typehint_manager_unwrap() -> None:
+    manager = TypeHintManager(str)
+    assert manager.unwrap() is str
+
+    manager = TypeHintManager(str | None)
+    assert manager.unwrap() is str
+
+    manager = TypeHintManager(Optional[str])
+    assert manager.unwrap() is str
+
+    manager = TypeHintManager(Union[str, int, None])
+    assert manager.unwrap() is Union[str, int]
+
+    manager = TypeHintManager(Union[str, None])
+    assert manager.unwrap() is str
+
+    manager = TypeHintManager(str | int | None)
+    assert manager.unwrap() is Union[str, int]
+
+    manager = TypeHintManager(Literal["a", "b", "c"])
+    assert manager.unwrap() is str
+    assert manager.is_literal is True
+    assert manager.literal_values == ("a", "b", "c")
+
+    manager = TypeHintManager(list[str])
+    assert manager.unwrap() is str
+
+    manager = TypeHintManager(list[int] | None)
+    assert manager.unwrap() is int
+
+    manager = TypeHintManager(Optional[list[int]])
+    assert manager.unwrap() is int
+
+    manager = TypeHintManager(list[Literal["a", "b", "c"]])
+    assert manager.unwrap() is str
+    assert manager.is_literal is True
+    assert manager.literal_values == ("a", "b", "c")

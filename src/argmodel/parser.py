@@ -77,6 +77,7 @@ class Parser(Generic[BaseArgModel]):
         parsed_args = parser.parse_args(args)
 
         subparser_model = self.subparsers[get_subparser_name(parsed_args)].model
+        assert issubclass(subparser_model, ArgModel)
 
         return (
             self.model(**parsed_args.__dict__).repr_args()

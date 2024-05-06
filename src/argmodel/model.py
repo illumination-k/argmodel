@@ -1,61 +1,21 @@
 import argparse
-from argparse import HelpFormatter
 import logging
-import dataclasses
+from typing import Any, Self, TypedDict, Unpack
 
-from typing import Any, Self, get_origin, TypedDict, Unpack
-
-from pydantic import BaseModel, SecretStr, ValidationError
+from pydantic import BaseModel, ValidationError
 from pydantic.fields import FieldInfo
-
 from pydantic_core import PydanticUndefined
 
 from argmodel.field import get_arg_meta
-from argmodel.typing_utils import (
-    get_list_inner_type,
-    get_literal_values,
-    get_optional_inner_type,
-    is_literal_type,
-    is_optional_type,
-    literal_to_union,
-)
+from argmodel.typing_utils import TypeHintManager
 
 from ._constants import DEFAULT_GROUP
 
 logger = logging.getLogger(__name__)
 
 
-@dataclasses.dataclass
-class TypeHintManager:
-    type_hint: Any
-    is_literal: bool = False
-    literal_values: tuple[Any] | None = None
-
-    def _unwrap_optional(self) -> None:
-        if is_optional_type(self.type_hint):
-            self.type_hint = get_optional_inner_type(self.type_hint)
-
-    def _unwrap_literal(self) -> None:
-        if is_literal_type(self.type_hint):
-            self.is_literal = True
-            self.literal_values = get_literal_values(self.type_hint)
-            self.type_hint = literal_to_union(self.type_hint)
-
-    def _unwrap_list(self) -> None:
-        if get_origin(self.type_hint) is list:
-            self.type_hint = get_list_inner_type(self.type_hint)
-
-    def _unwrap_secret(self) -> None:
-        if self.type_hint is SecretStr:
-            self.type_hint = str
-
-    def unwrap(self) -> Any:
-        self._unwrap_optional()
-        self._unwrap_list()
-        self._unwrap_literal()
-        self._unwrap_secret()
-
-        return self.type_hint
+def _is_none_or_undefined(value: Any) -> bool:
+    return value is None or value is PydanticUndefined
 
 
 class ArgumentBuilder:
@@ -86,24 +46,22 @@ class ArgumentBuilder:
             return True if self.meta.action == "store_false" else False
 
         default = self.field.default
-        if (
-            default is None or default is PydanticUndefined
-        ) and self.field.default_factory is not None:
+
+        if _is_none_or_undefined(default) and self.field.default_factory is not None:
             default = self.field.default_factory()
 
         return default
 
     @property
     def help(self) -> str | None:
-        if self.field.description is not None and (
-            self.default is None or self.default is PydanticUndefined
-        ):
+        if self.field.description is not None and _is_none_or_undefined(self.default):
             return self.field.description
 
-        if self.field.description is None and (
-            self.default is not None and self.default is not PydanticUndefined
-        ):
+        if self.field.description is None and not _is_none_or_undefined(self.default):
             return f"(default: {self.default})"
+
+        if self.field.description is None and _is_none_or_undefined(self.default):
+            return None
 
         return f"{self.field.description} (default: {self.default})"
 
@@ -141,7 +99,6 @@ class BuildParserKwargs(TypedDict, total=False):
     usage: str
     description: str
     epilog: str
-    formatter_class: HelpFormatter
     prefix_chars: str
     fromfile_prefix_chars: str
     conflict_handler: str
@@ -188,8 +145,10 @@ class ArgModel(BaseModel):
         cls.build_parser().print_help()
 
     @classmethod
-    def parse_args(
-        cls, args: list[str] | None = None, **kwargs: Unpack[BuildParserKwargs]
+    def parse_typed_args(
+        cls,
+        args: list[str] | None = None,
+        **kwargs: Unpack[BuildParserKwargs],
     ) -> Self:
         parser = cls.build_parser(**kwargs)
         parsed_args = parser.parse_args(args)

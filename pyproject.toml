@@ -9,7 +9,7 @@ dependencies = [
   "pydantic>=2.7.1",
 ]
 readme = "README.md"
-requires-python = ">= 3.12"
+requires-python = ">= 3.11"
 
 [build-system]
 requires = ["hatchling"]
@@ -23,16 +23,29 @@ dev-dependencies = [
   "ruff>=0.4.2",
 ]
 
+[tool.rye.scripts]
+"fmt:ruff" = "ruff format ."
+"fmt:ruff_check" = "ruff check . --fix"
+"fmt:dprint" = "dprint fmt"
+fmt = { chain = ["fmt:ruff", "fmt:ruff_check", "fmt:dprint"] }
+
+"lint:ruff" = "ruff check ."
+"lint:mypy" = "mypy ."
+"lint:dprint" = "dprint check"
+lint = { chain = ["lint:ruff", "lint:mypy", "lint:dprint"] }
+
 [tool.hatch.metadata]
 allow-direct-references = true
 
 [tool.ruff]
-target-version = "py312"
+target-version = "py311"
 
 [tool.ruff.lint]
 extend-select = ["I"]
 
 [tool.mypy]
+python_version = "3.11"
+
 ignore_missing_imports = true
 check_untyped_defs = true
 disallow_untyped_calls = true

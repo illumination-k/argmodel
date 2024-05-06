@@ -19,5 +19,7 @@ class ExampleArgs(ArgModel):
 
 
 if __name__ == "__main__":
-    args = ExampleArgs.parse_args(prog="example", description="An example program")
+    args = ExampleArgs.parse_typed_args(
+        prog="example", description="An example program"
+    )
     print(args)
