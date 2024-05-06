@@ -7,7 +7,7 @@ from .model import ArgModel
 class SimpleArgs(ArgModel):
     string: str = ArgField(group="group1")
     integer: int = ArgField(group="group1")
-    boolean: bool = ArgField(group="group2")
+    boolean: bool = ArgField(group="group2", action="store_true")
     fp: float = ArgField(group="group2")
 
 

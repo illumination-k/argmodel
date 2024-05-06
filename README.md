@@ -12,7 +12,7 @@ class ExampleArgs(ArgModel):
     integer: int = ArgField(short="i", group="number")
     fp: float = ArgField(short="f", group="number")
     store_true: bool = ArgField(group="boolean")
-    store_false: bool = ArgField(group="boolean")
+    store_false: bool = ArgField(group="boolean", action="store_false")
 
     list_of_strings: list[str] = ArgField(default=[], nargs="*", group="list")
 

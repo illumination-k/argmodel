@@ -44,15 +44,18 @@ class Parser(Generic[BaseArgModel]):
         if len(self.subparsers) == 0:
             return root_parser
 
+        subparsers = root_parser.add_subparsers()
         for name, data in self.subparsers.items():
-            subparser = data.model.__build_parser(root_parser.add_subparsers(dest=name))
+            subparser_model = data.model
+            assert issubclass(subparser_model, ArgModel)
+
+            subparser = subparser_model._build_parser(
+                root_parser=subparsers.add_parser(name=name)
+            )
             subparser.set_defaults(subparser_name=name)
             subparser.set_defaults(subparser_callback=data.callback)
 
         return root_parser
-
-    def parse_basemodel(self, args: list[str] | None = None) -> BaseArgModel:
-        return self.model.parse_args(args)
 
     def run_subparsers(self, args: list[str] | None = None) -> None:
         parser = self.build_parser()
