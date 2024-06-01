@@ -18,7 +18,7 @@ class ExampleArgs(ArgModel):
 
     choices: Literal["a", "b", "c"] = ArgField(group="choices")
 
-print(ExampleArgs.parse_args())
+print(ExampleArgs.parse_typed_args())
 ```
 
 ```

@@ -1,7 +1,7 @@
 from typing import Literal, Optional
 
-from .field import ArgField
-from .model import ArgModel
+from ..field import ArgField
+from .base import ArgModel
 
 
 class SimpleArgs(ArgModel):

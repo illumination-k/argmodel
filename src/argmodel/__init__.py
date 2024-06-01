@@ -1,6 +1,5 @@
 from argmodel.field import ArgField
-from argmodel.model import ArgModel
-from argmodel.parser import Parser
+from argmodel.model.base import ArgModel
 
 __all__ = [
     "ArgModel",

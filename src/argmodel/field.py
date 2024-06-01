@@ -6,7 +6,16 @@ from pydantic.fields import FieldInfo, _FieldInfoInputs
 from ._constants import DEFAULT_GROUP
 
 Action: TypeAlias = Literal[
-    "store_true", "store_false", "store", "store_const", "help", "version"
+    "store_true",
+    "store_false",
+    "store",
+    "store_const",
+    "help",
+    "version",
+    "count",
+    "append",
+    "append_const",
+    "extend",
 ]
 Nargs: TypeAlias = Literal["?", "*", "+"] | int
 LogLevel: TypeAlias = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
